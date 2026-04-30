@@ -1,5 +1,3 @@
-﻿
-
 /*-------------------------------------------------
        ////Code Written By B. Srinu  on 17thDec2015
        ////Description: ClaimUnlock
@@ -1102,9 +1100,10 @@ function Fill_HospitalizationDetails(data) {
 
     $("#ddlReceivedAccomodation").val(data[0].ReqFacilityID);
     if ((data[0].RequestTypeID == 1 || data[0].RequestTypeID == 2 || data[0].RequestTypeID == 3) && basicData[0].IsAprvFacilitychanged != 1 && $('#hdnClaimStageID').val() == 5 && basicData[0].ServiceTypeID ==1)
-        $("#ddlApprovedFacility").val(0);
+        // ClaimAI: always set approved = availed instead of resetting to 0
+        $("#ddlApprovedFacility").val(data[0].ReqFacilityID || data[0].ApprovedFacilityID || 0);
     else
-    $("#ddlApprovedFacility").val(data[0].ApprovedFacilityID);
+    $("#ddlApprovedFacility").val(data[0].ApprovedFacilityID || data[0].ReqFacilityID || 0);
 
     $("#txtOtherAccomodation").val(data[0].ReqOtherAccm);
     $('#hdnClaimTypeID').val(data[0].ClaimTypeID);
