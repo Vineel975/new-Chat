@@ -9025,32 +9025,30 @@ namespace Enrollment.Controllers
                 {
                     conn.Open();
 
-                    // 1. Update Claims table: BillNo + IsFacilityChanged=1
-                    // IsFacilityChanged=1 prevents Fill_HospitalizationDetails from resetting
-                    // ddlApprovedFacility to 0 on page reload (the IsAprvFacilitychanged guard).
-                    // Room/ICU days are left unchanged — we preserve whatever Spectra has.
-                    // Claims table PK is ID only — no SlNo column on this table.
+                    // 1. Update Claims table: BillNo only (no SlNo column here)
                     var cmdClaims = conn.CreateCommand();
                     cmdClaims.CommandText = @"
                         UPDATE Claims
-                        SET    BillNo            = @BillNo,
-                               IsFacilityChanged = 1
+                        SET    BillNo = @BillNo
                         WHERE  ID = @ClaimID
                           AND  ISNULL(Deleted, 0) = 0";
                     cmdClaims.Parameters.AddWithValue("@BillNo",  billNoVal);
                     cmdClaims.Parameters.AddWithValue("@ClaimID", claimIdLong);
                     rowsAffected += cmdClaims.ExecuteNonQuery();
 
-                    // 2. Update Claimsdetails: ApprovedFacilityID (if supplied)
+                    // 2. Update Claimsdetails: ApprovedFacilityID + IsFacilityChanged=1
+                    // IsFacilityChanged is on Claimsdetails (not Claims).
+                    // Setting it to 1 prevents Fill_HospitalizationDetails from resetting
+                    // ddlApprovedFacility to 0 on page reload (the IsAprvFacilitychanged guard).
                     int facId;
                     if (!string.IsNullOrWhiteSpace(approvedFacilityId) &&
                         int.TryParse(approvedFacilityId.Trim(), out facId) && facId > 0)
                     {
                         var cmdDtl = conn.CreateCommand();
-                        // Claimsdetails uses column name "Slno" (lowercase n)
                         cmdDtl.CommandText = @"
                             UPDATE Claimsdetails
-                            SET    ApprovedFacilityID = @FacID
+                            SET    ApprovedFacilityID = @FacID,
+                                   IsFacilityChanged  = 1
                             WHERE  ClaimID = @ClaimID
                               AND  Slno    = @SlNo
                               AND  ISNULL(Deleted, 0) = 0";
@@ -9061,7 +9059,35 @@ namespace Enrollment.Controllers
                     }
                 }
 
-                return Json(new { success = rowsAffected > 0, rowsAffected = rowsAffected, billNo = billNoVal });
+                // Debug: read back what was actually saved
+                string debugApproved = "not read";
+                string debugFacilityChanged = "not read";
+                try {
+                    using (var connCheck = new System.Data.SqlClient.SqlConnection(connStr))
+                    {
+                        connCheck.Open();
+                        var chk = connCheck.CreateCommand();
+                        chk.CommandText = "SELECT TOP 1 IsFacilityChanged, BillNo FROM Claims WHERE ID=@ID AND ISNULL(Deleted,0)=0";
+                        chk.Parameters.AddWithValue("@ID", claimIdLong);
+                        using (var r = chk.ExecuteReader()) {
+                            if (r.Read()) {
+                                debugFacilityChanged = r["IsFacilityChanged"]?.ToString() ?? "null";
+                                debugApproved = r["BillNo"]?.ToString() ?? "null";
+                            }
+                        }
+                        var chk2 = connCheck.CreateCommand();
+                        chk2.CommandText = "SELECT TOP 1 ApprovedFacilityID FROM Claimsdetails WHERE ClaimID=@ID AND ISNULL(Deleted,0)=0 ORDER BY Slno DESC";
+                        chk2.Parameters.AddWithValue("@ID", claimIdLong);
+                        var approvedReadBack = chk2.ExecuteScalar();
+                        debugApproved = "ApprovedFacilityID=" + (approvedReadBack?.ToString() ?? "null");
+                    }
+                } catch {}
+
+                return Json(new { success = rowsAffected > 0, rowsAffected = rowsAffected, billNo = billNoVal,
+                    debug_IsFacilityChanged = debugFacilityChanged,
+                    debug_ApprovedFacilityID = debugApproved,
+                    debug_claimId = claimIdLong, debug_slNo = slNoInt,
+                    debug_approvedFacilityId_received = approvedFacilityId });
             }
             catch (Exception ex)
             {
