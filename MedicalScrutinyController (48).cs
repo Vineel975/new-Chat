@@ -9025,13 +9025,13 @@ namespace Enrollment.Controllers
                 {
                     conn.Open();
 
-                    // 1. Update Claims table: ICUDays=1, RoomDays=0, BillNo
+                    // 1. Update Claims table: RoomDays=1, ICUDays=0, BillNo
                     // Claims table PK is ID only — no SlNo column on this table
                     var cmdClaims = conn.CreateCommand();
                     cmdClaims.CommandText = @"
                         UPDATE Claims
-                        SET    ICUDays  = 1,
-                               RoomDays = 0,
+                        SET    RoomDays = 1,
+                               ICUDays  = 0,
                                BillNo   = @BillNo
                         WHERE  ID = @ClaimID
                           AND  ISNULL(Deleted, 0) = 0";
