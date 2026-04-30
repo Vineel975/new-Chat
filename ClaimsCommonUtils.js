@@ -1099,11 +1099,17 @@ function Fill_HospitalizationDetails(data) {
     $("#spnHospAddress").text('PRC : ' + data[0].PRCNo + ', ' + data[0].Address1 + ',' + MakeEmptyfromUndefinedorNull(data[0].Address2));
 
     $("#ddlReceivedAccomodation").val(data[0].ReqFacilityID);
-    if ((data[0].RequestTypeID == 1 || data[0].RequestTypeID == 2 || data[0].RequestTypeID == 3) && basicData[0].IsAprvFacilitychanged != 1 && $('#hdnClaimStageID').val() == 5 && basicData[0].ServiceTypeID ==1)
-        // ClaimAI: always set approved = availed instead of resetting to 0
-        $("#ddlApprovedFacility").val(data[0].ReqFacilityID || data[0].ApprovedFacilityID || 0);
-    else
-    $("#ddlApprovedFacility").val(data[0].ApprovedFacilityID || data[0].ReqFacilityID || 0);
+    console.log('[ClaimAI] Fill_HospDtls: ReqFacilityID=', data[0].ReqFacilityID,
+        'ApprovedFacilityID=', data[0].ApprovedFacilityID,
+        'IsAprvFacilitychanged=', basicData[0].IsAprvFacilitychanged,
+        'StageID=', $('#hdnClaimStageID').val(),
+        'ServiceTypeID=', basicData[0].ServiceTypeID,
+        'RequestTypeID=', data[0].RequestTypeID);
+    // Always populate approved from ApprovedFacilityID saved in DB,
+    // fallback to ReqFacilityID (availed). Never reset to 0.
+    var _aprvFacVal = data[0].ApprovedFacilityID || data[0].ReqFacilityID || 0;
+    $("#ddlApprovedFacility").val(_aprvFacVal);
+    console.log('[ClaimAI] ddlApprovedFacility set to:', _aprvFacVal, 'actual val after set:', $("#ddlApprovedFacility").val());
 
     $("#txtOtherAccomodation").val(data[0].ReqOtherAccm);
     $('#hdnClaimTypeID').val(data[0].ClaimTypeID);
