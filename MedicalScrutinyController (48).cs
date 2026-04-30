@@ -9025,14 +9025,16 @@ namespace Enrollment.Controllers
                 {
                     conn.Open();
 
-                    // 1. Update Claims table: RoomDays=1, ICUDays=0, BillNo
-                    // Claims table PK is ID only — no SlNo column on this table
+                    // 1. Update Claims table: BillNo + IsFacilityChanged=1
+                    // IsFacilityChanged=1 prevents Fill_HospitalizationDetails from resetting
+                    // ddlApprovedFacility to 0 on page reload (the IsAprvFacilitychanged guard).
+                    // Room/ICU days are left unchanged — we preserve whatever Spectra has.
+                    // Claims table PK is ID only — no SlNo column on this table.
                     var cmdClaims = conn.CreateCommand();
                     cmdClaims.CommandText = @"
                         UPDATE Claims
-                        SET    RoomDays = 1,
-                               ICUDays  = 0,
-                               BillNo   = @BillNo
+                        SET    BillNo            = @BillNo,
+                               IsFacilityChanged = 1
                         WHERE  ID = @ClaimID
                           AND  ISNULL(Deleted, 0) = 0";
                     cmdClaims.Parameters.AddWithValue("@BillNo",  billNoVal);
