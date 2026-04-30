@@ -8810,17 +8810,20 @@
                     // AND populates the DOM fields so the manual Save button also persists them.
                     try {
                         // 1. Approved Accommodation = Availed Accommodation
+                        // ddlReceivedAccomodation may be disabled — read value directly from the element
                         var claimAI_availed  = document.getElementById('ddlReceivedAccomodation');
                         var claimAI_approved = document.getElementById('ddlApprovedFacility');
-                        var claimAI_approvedFacId = '';
-                        if (claimAI_availed && claimAI_approved && claimAI_availed.value) {
-                            claimAI_approvedFacId = claimAI_availed.value;
+                        // Read availed value even if disabled (disabled selects still have .value)
+                        var claimAI_approvedFacId = (claimAI_availed ? claimAI_availed.value : '') ||
+                                                     window._claimAI_approvedFacilityId || '';
+                        console.log('[ClaimAI] availed el:', claimAI_availed,
+                            'availed.value:', claimAI_availed ? claimAI_availed.value : 'NO ELEMENT',
+                            'window._claimAI_approvedFacilityId:', window._claimAI_approvedFacilityId,
+                            'final approvedFacId:', claimAI_approvedFacId);
+                        if (claimAI_approved && claimAI_approvedFacId) {
                             claimAI_approved.disabled = false;
                             claimAI_approved.value    = claimAI_approvedFacId;
                             window._claimAI_approvedFacilityId = claimAI_approvedFacId;
-                            console.log('[ClaimAI] ApprovedFacility set to availed:', claimAI_approvedFacId);
-                        } else if (window._claimAI_approvedFacilityId) {
-                            claimAI_approvedFacId = window._claimAI_approvedFacilityId;
                         }
 
                         // 2. Room/ICU days — leave as-is (preserve Spectra values)
