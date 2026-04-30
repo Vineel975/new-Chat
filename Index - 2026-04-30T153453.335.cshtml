@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewBag.TitleDepartment = "Claims";
     ViewBag.Title = "Claim";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -8823,16 +8823,16 @@
                             claimAI_approvedFacId = window._claimAI_approvedFacilityId;
                         }
 
-                        // 2. ICU Days = 1, Room Days = 0
+                        // 2. Room Days = 1, ICU Days = 0
                         var claimAI_icu  = document.getElementById('txtICUDays');
                         var claimAI_room = document.getElementById('txtRoomDays');
-                        if (claimAI_icu)  { claimAI_icu.disabled  = false; claimAI_icu.value  = '1'; }
-                        if (claimAI_room) { claimAI_room.disabled = false; claimAI_room.value = '0'; }
-                        console.log('[ClaimAI] ICU Days=1, Room Days=0');
+                        if (claimAI_icu)  { claimAI_icu.disabled  = false; claimAI_icu.value  = '0'; }
+                        if (claimAI_room) { claimAI_room.disabled = false; claimAI_room.value = '1'; }
+                        console.log('[ClaimAI] Room Days=1, ICU Days=0');
 
-                        // 3. Update hdnDaysDetails [ICUDays, RoomDays] = [1, 0]
+                        // 3. Update hdnDaysDetails [ICUDays, RoomDays] = [0, 1]
                         var claimAI_hdn = document.getElementById('hdnDaysDetails');
-                        if (claimAI_hdn) { claimAI_hdn.value = JSON.stringify([1, 0]); }
+                        if (claimAI_hdn) { claimAI_hdn.value = JSON.stringify([0, 1]); }
 
                         // 4. Bill No — use existing value if present, else default to '135'
                         var claimAI_billEl = document.getElementById('txtBillNo');
