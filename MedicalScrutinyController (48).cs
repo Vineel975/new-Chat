@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9017,7 +9017,7 @@ namespace Enrollment.Controllers
                     var m = System.Text.RegularExpressions.Regex.Match(
                         connStr, @"provider connection string=""([^""]+)""",
                         System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                    if (m.Success) connStr = m.Groups[1].Value.Replace("&quot;", """);
+                    if (m.Success) connStr = m.Groups[1].Value.Replace("&quot;", "\"");
                 }
 
                 int rowsAffected = 0;
@@ -9026,18 +9026,17 @@ namespace Enrollment.Controllers
                     conn.Open();
 
                     // 1. Update Claims table: ICUDays=1, RoomDays=0, BillNo
+                    // Claims table PK is ID only — no SlNo column on this table
                     var cmdClaims = conn.CreateCommand();
                     cmdClaims.CommandText = @"
                         UPDATE Claims
                         SET    ICUDays  = 1,
                                RoomDays = 0,
                                BillNo   = @BillNo
-                        WHERE  ID   = @ClaimID
-                          AND  SlNo = @SlNo
+                        WHERE  ID = @ClaimID
                           AND  ISNULL(Deleted, 0) = 0";
-                    cmdClaims.Parameters.AddWithValue("@BillNo",   billNoVal);
-                    cmdClaims.Parameters.AddWithValue("@ClaimID",  claimIdLong);
-                    cmdClaims.Parameters.AddWithValue("@SlNo",     slNoInt);
+                    cmdClaims.Parameters.AddWithValue("@BillNo",  billNoVal);
+                    cmdClaims.Parameters.AddWithValue("@ClaimID", claimIdLong);
                     rowsAffected += cmdClaims.ExecuteNonQuery();
 
                     // 2. Update Claimsdetails: ApprovedFacilityID (if supplied)
@@ -9046,11 +9045,12 @@ namespace Enrollment.Controllers
                         int.TryParse(approvedFacilityId.Trim(), out facId) && facId > 0)
                     {
                         var cmdDtl = conn.CreateCommand();
+                        // Claimsdetails uses column name "Slno" (lowercase n)
                         cmdDtl.CommandText = @"
                             UPDATE Claimsdetails
                             SET    ApprovedFacilityID = @FacID
                             WHERE  ClaimID = @ClaimID
-                              AND  SlNo    = @SlNo
+                              AND  Slno    = @SlNo
                               AND  ISNULL(Deleted, 0) = 0";
                         cmdDtl.Parameters.AddWithValue("@FacID",   facId);
                         cmdDtl.Parameters.AddWithValue("@ClaimID", claimIdLong);
