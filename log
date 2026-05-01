@@ -1,4 +1,4 @@
-
-{success: true, rowsAffected: 2, billNo: '135', debug_IsFacilityChanged: 'not read', debug_ApprovedFacilityID: 'not read', …}
-
-Index:16704 [ClaimAI] SaveClinical FULL DEBUG: claimDetailsId: 13422099 approvedFacId: 12 window._claimAI_approvedFacilityId: 12 ddlApprovedFacility.val(): 12 ddlApprovedFacility.is(:disabled): false ddlApprovedFacility options count: 29 diagnosis: (RE) Cataract
+Sukhmander Kaur was admitted to <<ProviderName>> on <<DOA>> for <<Diagnosis>>
+Treatment Type: Surgical Management
+Treatment Details:  <<SurgeryName/Plan of treatment>>
+Total bill amount is ₹52,000
